@@ -1,0 +1,9 @@
+world_address = ""  # Will be set after world deployment
+rpc = "http://localhost:5050"
+
+[events]
+raw = true
+
+[indexing]
+pending = true
+

@@ -1,0 +1,30 @@
+[package]
+cairo-version = "=2.14.0"
+name = "aqua_stark"
+version = "0.1.0"
+edition = "2024_07"
+
+[lib]
+
+[cairo]
+sierra-replace-ids = true
+
+[dependencies]
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.8.0" }
+starknet = ">=2.4.0"
+
+[dev-dependencies]
+cairo_test = "=2.14.0"
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.8.0" }
+
+[[target.starknet-contract]]
+sierra = true
+casm = true
+
+[tool.fmt]
+sort-module-level-items = true
+max-line-length = 120
+
+[profile.sepolia]
+[profile.mainnet]
+
