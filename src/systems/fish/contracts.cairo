@@ -1,6 +1,6 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use starknet::ContractAddress;
-use aqua_stark::models::fish_counter::FishCounter;
+use aqua_stark::models::counters::fish_counter::FishCounter;
 
 // Constant key for singleton FishCounter instance
 const FISH_COUNTER_KEY: u32 = 0;
@@ -17,7 +17,7 @@ mod FishSystem {
     use super::{IFishSystem, FISH_COUNTER_KEY};
     use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
     use starknet::ContractAddress;
-    use aqua_stark::models::fish_counter::FishCounter;
+    use aqua_stark::models::counters::fish_counter::FishCounter;
 
     // Component state
     #[storage]
