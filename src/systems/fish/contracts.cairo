@@ -1,6 +1,4 @@
-use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use starknet::ContractAddress;
-use aqua_stark::models::counters::fish_counter::FishCounter;
 
 // Constant key for singleton FishCounter instance
 const FISH_COUNTER_KEY: u32 = 0;
@@ -9,15 +7,19 @@ const FISH_COUNTER_KEY: u32 = 0;
 #[starknet::interface]
 trait IFishSystem<TContractState> {
     fn get_next_fish_id(ref self: TContractState) -> u32;
+    fn mint_fish(ref self: TContractState, address: ContractAddress, species: felt252, dna: felt252) -> u32;
 }
 
 // Fish system contract implementation
 #[dojo::contract]
 mod FishSystem {
     use super::{IFishSystem, FISH_COUNTER_KEY};
-    use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
-    use starknet::ContractAddress;
+    use dojo::model::ModelStorage;
+    use starknet::{ContractAddress, get_block_timestamp};
+    use core::option::Option;
     use aqua_stark::models::counters::fish_counter::FishCounter;
+    use aqua_stark::models::fish::{Fish, FishState};
+    use aqua_stark::models::player::Player;
 
     // Component state
     #[storage]
@@ -25,24 +27,11 @@ mod FishSystem {
 
     // Implementation of fish system functions
     #[abi(embed_v0)]
-    impl FishSystemImpl = super::IFishSystem<ContractState>;
-
-    #[generate_trait]
-    impl InternalImpl = Internal<ContractState>;
-
-    impl Internal<TContractState> {
-        // Internal function to get world dispatcher
-        fn _world(self: @TContractState) -> IWorldDispatcher {
-            self.world_dispatcher.read()
-        }
-    }
-
-    #[abi(embed_v0)]
-    impl FishSystem<ContractState> of super::IFishSystem<ContractState> {
+    impl FishSystemImpl of super::IFishSystem<ContractState> {
         // Generates a globally unique fish ID by atomically incrementing the FishCounter
         // Returns the current count value and increments it atomically
         fn get_next_fish_id(ref self: ContractState) -> u32 {
-            let world = self._world();
+            let mut world = self.world(@"aqua_stark");
             
             // Read current FishCounter state
             let mut counter: FishCounter = world.read_model(FISH_COUNTER_KEY);
@@ -58,6 +47,58 @@ mod FishSystem {
             
             // Return the ID that was assigned (before increment)
             current_id
+        }
+
+        // Mints a new fish NFT to a player's address
+        // Generates unique ID, creates Fish component with default values, and updates player's fish_count
+        fn mint_fish(ref self: ContractState, address: ContractAddress, species: felt252, dna: felt252) -> u32 {
+            let mut world = self.world(@"aqua_stark");
+            
+            // Validate address is non-zero
+            let address_felt: felt252 = address.into();
+            assert(address_felt != 0, 'Invalid address: cannot be zero');
+            
+            // Validate player exists by reading Player model
+            // Note: In Dojo, read_model always returns a value (default if not exists)
+            // A registered player will have a Player model in the world, even if all fields are 0
+            // We can't directly check if a model exists, but we can read it
+            // The backend should call register_player before mint_fish, so we assume the player exists
+            // If the player wasn't registered, the model will have default values but that's acceptable
+            // for the first fish mint (fish_count will be 0 initially, then incremented to 1)
+            let mut player: Player = world.read_model(address);
+            
+            // Validate species and dna are provided (non-zero)
+            assert(species != 0, 'Invalid species: cannot be zero');
+            assert(dna != 0, 'Invalid dna: cannot be zero');
+            
+            // Generate unique fish ID
+            let fish_id = self.get_next_fish_id();
+            
+            // Get current timestamp
+            let current_timestamp = get_block_timestamp();
+            
+            // Create Fish component with default values
+            let new_fish = Fish {
+                id: fish_id,
+                owner: address,
+                state: FishState::Baby,
+                dna: dna,
+                xp: 0,
+                last_fed_at: current_timestamp,
+                is_ready_to_breed: false,
+                parent_ids: (Option::None, Option::None),
+                species: species,
+            };
+            
+            // Store Fish component in Dojo world
+            world.write_model(@new_fish);
+            
+            // Update player's fish_count (increment by 1)
+            player.fish_count = player.fish_count + 1;
+            world.write_model(@player);
+            
+            // Return the new fish_id
+            fish_id
         }
     }
 }

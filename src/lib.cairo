@@ -4,9 +4,9 @@ pub mod systems {
     pub mod player {
         pub mod contracts;
     }
-    // pub mod fish {
-    //     pub mod contracts;
-    // }
+    pub mod fish {
+        pub mod contracts;
+    }
     // pub mod tank {
     //     pub mod contracts;
     // }
