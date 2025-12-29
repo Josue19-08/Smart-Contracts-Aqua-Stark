@@ -21,6 +21,7 @@ pub mod models {
     pub mod fish;
     pub mod tank;
     pub mod decoration;
+    pub mod fish_counter;
     pub mod tank_counter;
 }
 
