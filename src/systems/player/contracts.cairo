@@ -1,3 +1,60 @@
-// TODO: Define player-related functions (register_player, update_player, etc.)
-// Note: Systems will be implemented when models are defined
+use starknet::ContractAddress;
 
+// Interface for player system functions
+#[starknet::interface]
+trait IPlayerSystem<TContractState> {
+    fn register_player(ref self: TContractState, address: ContractAddress);
+}
+
+// Player system contract implementation
+#[dojo::contract]
+mod PlayerSystem {
+    use dojo::model::ModelStorage;
+    use starknet::ContractAddress;
+    use aqua_stark::models::player::Player;
+
+    // Component state
+    #[storage]
+    struct Storage {}
+
+    // Implementation of player system functions
+    #[abi(embed_v0)]
+    impl PlayerSystemImpl of super::IPlayerSystem<ContractState> {
+        // Registers a new player on-chain with default values
+        // Validates address is non-zero and player doesn't already exist
+        fn register_player(ref self: ContractState, address: ContractAddress) {
+            let mut world = self.world(@"aqua_stark");
+            
+            // Validate address is non-zero (address key cannot be zero)
+            let address_felt: felt252 = address.into();
+            assert(address_felt != 0, 'Invalid address: cannot be zero');
+            
+            // Check if player already exists by reading the model
+            let existing_player: Player = world.read_model(address);
+            
+            // Verify if player has been initialized (check if any field indicates existing player)
+            // If total_xp > 0 or any other field is non-zero, player already exists
+            assert(
+                existing_player.total_xp == 0 && 
+                existing_player.fish_count == 0 && 
+                existing_player.tournaments_won == 0 && 
+                existing_player.reputation == 0 && 
+                existing_player.offspring_created == 0,
+                'Player already registered'
+            );
+            
+            // Create new Player with default values
+            let new_player = Player {
+                address: address,
+                total_xp: 0,
+                fish_count: 0,
+                tournaments_won: 0,
+                reputation: 0,
+                offspring_created: 0,
+            };
+            
+            // Write Player to world state
+            world.write_model(@new_player);
+        }
+    }
+}
