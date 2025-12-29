@@ -1,6 +1,6 @@
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
 use starknet::ContractAddress;
-use aqua_stark::models::tank_counter::TankCounter;
+use aqua_stark::models::counters::tank_counter::TankCounter;
 
 // Constant key for singleton TankCounter instance
 const TANK_COUNTER_KEY: u32 = 0;
@@ -17,7 +17,7 @@ mod TankSystem {
     use super::{ITankSystem, TANK_COUNTER_KEY};
     use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait};
     use starknet::ContractAddress;
-    use aqua_stark::models::tank_counter::TankCounter;
+    use aqua_stark::models::counters::tank_counter::TankCounter;
 
     // Component state
     #[storage]
