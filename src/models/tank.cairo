@@ -1,10 +1,12 @@
-// TODO: Define Tank fields (capacity, decorations, etc.)
+use starknet::ContractAddress;
+
+// Tank model representing an aquarium container in Aqua Stark
 #[derive(Drop, Copy, Serde)]
 #[dojo::model]
 pub struct Tank {
     #[key]
-    pub tank_id: felt252,
-    // TODO: Add Tank fields here
-    pub placeholder: u8,  // Temporary field - replace with actual fields
+    pub id: u32,
+    pub owner: ContractAddress,
+    pub capacity: u8,
 }
 
