@@ -1,3 +1,5 @@
+<img width="2300" height="863" alt="aqua-banner" src="https://github.com/user-attachments/assets/e870b386-093d-4fde-934a-a3d19d180903" />
+
 # Aqua Stark Smart Contracts
 
 Base structure for Aqua Stark Smart Contracts using Cairo 1.0 and Dojo ECS framework.
