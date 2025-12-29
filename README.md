@@ -58,7 +58,3 @@ docs/
 
 See [VERSIONS.md](VERSIONS.md) for detailed version information and rationale.
 
-## Development
-
-This is a base structure with no implemented logic. All files contain TODO comments indicating where implementation should begin. Follow the architecture and standards defined in the documentation.
-
