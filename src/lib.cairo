@@ -10,9 +10,9 @@ pub mod systems {
     pub mod tank {
         pub mod contracts;
     }
-    // pub mod decoration {
-    //     pub mod contracts;
-    // }
+    pub mod decoration {
+        pub mod contracts;
+    }
 }
 
 pub mod models {

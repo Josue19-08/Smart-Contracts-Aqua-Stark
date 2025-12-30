@@ -20,6 +20,7 @@ dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.8.0" }
 [[target.starknet-contract]]
 sierra = true
 casm = true
+build-external-contracts = ["dojo::world::world_contract::world"]
 
 [tool.fmt]
 sort-module-level-items = true

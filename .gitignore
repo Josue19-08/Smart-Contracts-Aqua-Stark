@@ -1,6 +1,9 @@
 # Dojo build artifacts
 target/
 
+# Dojo generated files
+manifest*.json
+
 # Scarb cache
 .scarb/
 
