@@ -8,24 +8,24 @@ rpc_url = "http://localhost:5050/"
 # Default account for katana with seed = 0
 account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
 private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
-world_address = ""  # Will be set after initial deployment
+# world_address will be set after initial deployment
 
 [namespace]
 default = "aqua_stark_0_0_1"
 
 [writers]
 "aqua_stark_0_0_1" = [
-    "aqua_stark_0_0_1-player_systems",
-    "aqua_stark_0_0_1-fish_systems",
-    "aqua_stark_0_0_1-tank_systems",
-    "aqua_stark_0_0_1-decoration_systems"
+    "aqua_stark_0_0_1-PlayerSystem",
+    "aqua_stark_0_0_1-FishSystem",
+    "aqua_stark_0_0_1-TankSystem",
+    "aqua_stark_0_0_1-DecorationSystem"
 ]
 
 [migration]
 order_inits = [
-    "aqua_stark_0_0_1-player_systems",
-    "aqua_stark_0_0_1-fish_systems",
-    "aqua_stark_0_0_1-tank_systems",
-    "aqua_stark_0_0_1-decoration_systems"
+    "aqua_stark_0_0_1-PlayerSystem",
+    "aqua_stark_0_0_1-FishSystem",
+    "aqua_stark_0_0_1-TankSystem",
+    "aqua_stark_0_0_1-DecorationSystem"
 ]
 
