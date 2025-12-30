@@ -7,9 +7,9 @@ pub mod systems {
     pub mod fish {
         pub mod contracts;
     }
-    // pub mod tank {
-    //     pub mod contracts;
-    // }
+    pub mod tank {
+        pub mod contracts;
+    }
     // pub mod decoration {
     //     pub mod contracts;
     // }
