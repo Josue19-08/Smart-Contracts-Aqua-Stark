@@ -1,0 +1,26 @@
+# Katana local Starknet testnet configuration
+# This file configures Katana for local development and testing
+
+[env]
+# RPC endpoint URL (default: http://localhost:5050)
+rpc = "http://localhost:5050"
+
+# Enable dev mode (no fees, instant blocks)
+[dev]
+# Seed for deterministic account generation
+seed = 0
+# Disable transaction fees
+no_fee = true
+# Disable account validation
+no_account_validation = true
+
+# Block generation settings
+[block]
+# Block time in seconds (0 = instant)
+block_time = 0
+
+# Account settings
+[accounts]
+# Number of pre-funded accounts to create
+count = 10
+
