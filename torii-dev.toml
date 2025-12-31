@@ -1,4 +1,4 @@
-world_address = ""  # Will be set after world deployment
+world_address = "0x06d10bbdbf0b1798c946ed3a07361e86c546eab1af1e2d70fe4d1b17dfd04a5c"  # World address from deployment
 rpc = "http://localhost:5050"
 
 [events]

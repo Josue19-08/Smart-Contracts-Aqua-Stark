@@ -44,10 +44,29 @@ docs/
 
 ## Getting Started
 
-1. Ensure you have the required tools installed (see `.tool-versions`)
-2. Install dependencies: `scarb build`
-3. Review the documentation in the `docs/` directory
-4. Start implementing models and systems according to the roadmap
+1. **Install Dojo tools** (see [versions.md](docs/versions.md)):
+   ```bash
+   curl -L https://install.dojoengine.org | bash
+   dojoup install
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   scarb build
+   ```
+
+3. **Setup Katana local testnet** (see [katana_setup.md](docs/katana_setup.md)):
+   ```bash
+   katana --dev --dev.seed 0 --dev.no-fee --dev.no-account-validation
+   ```
+
+4. **Deploy contracts** (see [deployment.md](docs/deployment.md)):
+   ```bash
+   ./scripts/deploy_dev.sh
+   ```
+
+5. Review the documentation in the `docs/` directory
+6. Start implementing models and systems according to the roadmap
 
 ## Version Requirements
 
