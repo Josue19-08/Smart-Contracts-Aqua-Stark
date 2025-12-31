@@ -183,8 +183,8 @@ mod tests {
         let fish2_id = fish_counter.count + 1;
         fish_counter.count = fish_counter.count + 1;
 
-        // Register player
-        let player = Player {
+        // Register player (not used in assertions, just for setup)
+        let _player = Player {
             address: player_address,
             total_xp: 0,
             fish_count: 0,
@@ -244,8 +244,8 @@ mod tests {
         const TEST_SPECIES: felt252 = 100;
         const TEST_DNA: felt252 = 200;
 
-        // Initialize counter
-        let fish_counter = FishCounter { id: 0, count: 0 };
+        // Initialize counter (not used in assertions, just for setup)
+        let _fish_counter = FishCounter { id: 0, count: 0 };
         let fish_id = 1;
 
         // Register player (not used in assertions, just for setup)
@@ -493,8 +493,8 @@ mod tests {
         // Test decoration activation and deactivation flow
         let player_address = get_test_address();
 
-        // Initialize counter
-        let decoration_counter = DecorationCounter { id: 0, count: 0 };
+        // Initialize counter (not used in assertions, just for setup)
+        let _decoration_counter = DecorationCounter { id: 0, count: 0 };
         let deco_id = 1;
 
         // Register player (not used in assertions, just for setup)
