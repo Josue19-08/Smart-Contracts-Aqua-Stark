@@ -17,6 +17,7 @@ trait IFishSystem<TContractState> {
     fn feed_fish_batch(ref self: TContractState, fish_ids: core::array::Array<u32>, timestamp: u64);
     fn gain_fish_xp(ref self: TContractState, fish_id: u32, amount: u32);
     fn set_ready_to_breed(ref self: TContractState, fish_id: u32, ready: bool);
+    fn breed_fish(ref self: TContractState, fish_id1: u32, fish_id2: u32) -> u32;
 }
 
 // Fish system contract implementation
@@ -551,6 +552,100 @@ mod FishSystem {
 
             // Write updated fish back to world
             world.write_model(@fish);
+        }
+
+        // Breeds two fish to create a new offspring
+        // Validates prerequisites, generates new fish with mixed DNA from parents, sets parent lineage, and updates player statistics
+        fn breed_fish(ref self: ContractState, fish_id1: u32, fish_id2: u32) -> u32 {
+            let mut world = self.world(@"aqua_stark");
+
+            // Validate fish IDs are non-zero
+            assert(fish_id1 != 0, 'Invalid fish_id1');
+            assert(fish_id2 != 0, 'Invalid fish_id2');
+
+            // Validate fish are different (cannot breed with itself)
+            assert(fish_id1 != fish_id2, 'Same fish');
+
+            // Get caller address to validate ownership
+            let caller = get_caller_address();
+
+            // Read both parent fish from world
+            let mut parent1: Fish = world.read_model(fish_id1);
+            let mut parent2: Fish = world.read_model(fish_id2);
+
+            // Validate ownership - both fish must belong to caller
+            let parent1_owner_felt: felt252 = parent1.owner.into();
+            let parent2_owner_felt: felt252 = parent2.owner.into();
+            let caller_felt: felt252 = caller.into();
+            assert(parent1_owner_felt == caller_felt, 'Not owner 1');
+            assert(parent2_owner_felt == caller_felt, 'Not owner 2');
+
+            // Validate both parents are in Adult state
+            match parent1.state {
+                FishState::Adult => {},
+                _ => {
+                    assert(false, 'Parent1 not Adult');
+                },
+            }
+            match parent2.state {
+                FishState::Adult => {},
+                _ => {
+                    assert(false, 'Parent2 not Adult');
+                },
+            }
+
+            // Validate both parents have is_ready_to_breed == true
+            assert(parent1.is_ready_to_breed == true, 'Parent1 not ready');
+            assert(parent2.is_ready_to_breed == true, 'Parent2 not ready');
+
+            // Get the owner address (same for both parents)
+            let owner_address = parent1.owner;
+
+            // Generate new fish_id
+            let new_fish_id = self.get_next_fish_id();
+
+            // Generate mixed DNA from parents (basic implementation: additive combination)
+            // Note: This is a simplified version - DNA utilities (Issue 8.1) will provide more sophisticated mixing
+            // Using addition to combine parent DNA values
+            let mixed_dna = parent1.dna + parent2.dna;
+
+            // Derive species from parents (use first parent's species as default)
+            // Note: This can be enhanced later with more sophisticated species combination logic
+            let offspring_species = parent1.species;
+
+            // Get current timestamp
+            let current_timestamp = get_block_timestamp();
+
+            // Create new Fish component with mixed genetics from parents
+            let new_fish = Fish {
+                id: new_fish_id,
+                owner: owner_address,
+                state: FishState::Baby,
+                dna: mixed_dna,
+                xp: 0,
+                last_fed_at: current_timestamp,
+                is_ready_to_breed: false,
+                parent_ids: (Option::Some(fish_id1), Option::Some(fish_id2)),
+                species: offspring_species,
+            };
+
+            // Store new Fish component in Dojo world
+            world.write_model(@new_fish);
+
+            // Update player statistics
+            let mut player: Player = world.read_model(owner_address);
+            player.offspring_created = player.offspring_created + 1;
+            player.fish_count = player.fish_count + 1;
+            world.write_model(@player);
+
+            // Set both parents' is_ready_to_breed = false (breeding cooldown)
+            parent1.is_ready_to_breed = false;
+            parent2.is_ready_to_breed = false;
+            world.write_model(@parent1);
+            world.write_model(@parent2);
+
+            // Return the new fish_id
+            new_fish_id
         }
     }
 }
