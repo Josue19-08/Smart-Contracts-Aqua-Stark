@@ -17,6 +17,7 @@ trait IDecorationSystem<TContractState> {
     fn mint_decoration(ref self: TContractState, address: ContractAddress, kind: DecorationKind) -> u32;
     fn get_decorations_by_owner(self: @TContractState, address: ContractAddress) -> core::array::Array<Decoration>;
     fn get_decoration(self: @TContractState, deco_id: u32) -> Decoration;
+    fn activate_decoration(ref self: TContractState, deco_id: u32);
 }
 
 // Decoration system contract implementation
@@ -24,7 +25,7 @@ trait IDecorationSystem<TContractState> {
 mod DecorationSystem {
     use super::{IDecorationSystem, DECORATION_COUNTER_KEY, PLANT_MULTIPLIER, STATUE_MULTIPLIER, BACKGROUND_MULTIPLIER, ORNAMENT_MULTIPLIER};
     use dojo::model::ModelStorage;
-    use starknet::ContractAddress;
+    use starknet::{ContractAddress, get_caller_address};
     use core::array::ArrayTrait;
     use aqua_stark::models::counters::decoration_counter::DecorationCounter;
     use aqua_stark::models::decoration::{Decoration, DecorationKind};
@@ -145,6 +146,32 @@ mod DecorationSystem {
 
             // Return the decoration (if it doesn't exist, returns default values)
             decoration
+        }
+
+        // Activates a decoration, making it apply its XP multiplier bonus
+        // When activated, the decoration's xp_multiplier contributes to the total multiplier calculation
+        fn activate_decoration(ref self: ContractState, deco_id: u32) {
+            let mut world = self.world(@"aqua_stark");
+
+            // Validate deco_id is non-zero
+            assert(deco_id != 0, 'Invalid deco_id');
+
+            // Get caller address to validate ownership
+            let caller = get_caller_address();
+
+            // Read decoration from world
+            let mut decoration: Decoration = world.read_model(deco_id);
+
+            // Validate ownership - decoration must belong to caller
+            let decoration_owner_felt: felt252 = decoration.owner.into();
+            let caller_felt: felt252 = caller.into();
+            assert(decoration_owner_felt == caller_felt, 'Not owner');
+
+            // Set is_active = true
+            decoration.is_active = true;
+
+            // Update Decoration component in Dojo world
+            world.write_model(@decoration);
         }
     }
 }
