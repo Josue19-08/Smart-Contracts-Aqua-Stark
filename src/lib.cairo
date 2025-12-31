@@ -23,5 +23,9 @@ pub mod models {
     pub mod counters;
 }
 
-// libs, constants, and utils will be added when implemented
+pub mod constants {
+    pub mod game_config;
+}
+
+// libs and utils will be added when implemented
 

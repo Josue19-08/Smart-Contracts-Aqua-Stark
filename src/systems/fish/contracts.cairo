@@ -3,6 +3,8 @@ use aqua_stark::models::fish::{Fish, FamilyTree};
 
 // Constant key for singleton FishCounter instance
 const FISH_COUNTER_KEY: u32 = 0;
+// Constant key for singleton DecorationCounter instance
+const DECORATION_COUNTER_KEY: u32 = 0;
 
 // Interface for fish system functions
 #[starknet::interface]
@@ -12,6 +14,7 @@ trait IFishSystem<TContractState> {
     fn get_fish_by_owner(self: @TContractState, address: ContractAddress) -> core::array::Array<Fish>;
     fn get_fish(self: @TContractState, fish_id: u32) -> Fish;
     fn get_fish_family_tree(self: @TContractState, fish_id: u32) -> FamilyTree;
+    fn feed_fish_batch(ref self: TContractState, fish_ids: core::array::Array<u32>, timestamp: u64);
 }
 
 // Fish system contract implementation
@@ -19,12 +22,15 @@ trait IFishSystem<TContractState> {
 mod FishSystem {
     use super::{IFishSystem, FISH_COUNTER_KEY};
     use dojo::model::ModelStorage;
-    use starknet::{ContractAddress, get_block_timestamp};
+    use starknet::{ContractAddress, get_block_timestamp, get_caller_address};
     use core::option::Option;
     use core::array::ArrayTrait;
     use aqua_stark::models::counters::fish_counter::FishCounter;
+    use aqua_stark::models::counters::decoration_counter::DecorationCounter;
     use aqua_stark::models::fish::{Fish, FishState, FamilyTree};
     use aqua_stark::models::player::Player;
+    use aqua_stark::models::decoration::Decoration;
+    use aqua_stark::constants::game_config::BASE_FEED_XP;
 
     // Component state
     #[storage]
@@ -388,6 +394,72 @@ mod FishSystem {
                 grandparents: grandparents,
                 uncles_aunts: uncles_aunts,
                 cousins: cousins,
+            }
+        }
+
+        // Feeds multiple fish at once, applying XP bonuses based on active decorations
+        // For each fish: validates ownership, calculates XP multiplier, applies XP with bonus, updates last_fed_at
+        fn feed_fish_batch(ref self: ContractState, fish_ids: core::array::Array<u32>, timestamp: u64) {
+            let mut world = self.world(@"aqua_stark");
+
+            // Get caller address to validate ownership
+            let caller = get_caller_address();
+
+            // Get fish array length
+            let fish_count = fish_ids.len();
+
+            // Process each fish in the batch
+            let mut i = 0;
+            while i < fish_count {
+                let fish_id = *fish_ids.at(i);
+
+                // Validate fish_id is non-zero
+                assert(fish_id != 0, 'Invalid fish_id');
+
+                // Read fish from world
+                let mut fish: Fish = world.read_model(fish_id);
+
+                // Validate ownership - fish must belong to caller
+                let fish_owner_felt: felt252 = fish.owner.into();
+                let caller_felt: felt252 = caller.into();
+                assert(fish_owner_felt == caller_felt, 'Not owner');
+
+                // Get the owner's address (from fish)
+                let owner_address = fish.owner;
+
+                // Calculate XP multiplier from active decorations (inline calculation)
+                let mut total_multiplier: u32 = 0;
+                let deco_counter: DecorationCounter = world.read_model(0);
+                let deco_max_id = deco_counter.count;
+                let mut deco_id = 1;
+                while deco_id <= deco_max_id {
+                    let decoration: Decoration = world.read_model(deco_id);
+                    let decoration_owner_felt: felt252 = decoration.owner.into();
+                    let owner_felt: felt252 = owner_address.into();
+                    if decoration_owner_felt == owner_felt && decoration.is_active {
+                        // Convert u8 to u32 for addition
+                        let multiplier_u32: u32 = decoration.xp_multiplier.into();
+                        total_multiplier = total_multiplier + multiplier_u32;
+                    }
+                    deco_id = deco_id + 1;
+                }
+
+                // Calculate base XP gain (from constants)
+                let base_xp = BASE_FEED_XP;
+
+                // Apply XP with multiplier: base_xp * (100 + multiplier) / 100
+                let xp_gain = base_xp * (100 + total_multiplier) / 100;
+
+                // Update fish XP
+                fish.xp = fish.xp + xp_gain;
+
+                // Update last_fed_at timestamp
+                fish.last_fed_at = timestamp;
+
+                // Write updated fish back to world
+                world.write_model(@fish);
+
+                i = i + 1;
             }
         }
     }
