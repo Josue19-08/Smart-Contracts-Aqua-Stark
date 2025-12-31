@@ -406,7 +406,7 @@ mod tests {
 
         // Calculate multiplier for owner1's tank (only decoration1 should count)
         let owner1_felt: felt252 = owner1.into();
-        let owner2_felt: felt252 = owner2.into();
+        let _owner2_felt: felt252 = owner2.into();
         let mut total_multiplier: u8 = 0;
 
         // Only count decorations owned by owner1
