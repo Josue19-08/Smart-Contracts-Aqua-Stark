@@ -18,6 +18,7 @@ trait IDecorationSystem<TContractState> {
     fn get_decorations_by_owner(self: @TContractState, address: ContractAddress) -> core::array::Array<Decoration>;
     fn get_decoration(self: @TContractState, deco_id: u32) -> Decoration;
     fn activate_decoration(ref self: TContractState, deco_id: u32);
+    fn deactivate_decoration(ref self: TContractState, deco_id: u32);
 }
 
 // Decoration system contract implementation
@@ -169,6 +170,32 @@ mod DecorationSystem {
 
             // Set is_active = true
             decoration.is_active = true;
+
+            // Update Decoration component in Dojo world
+            world.write_model(@decoration);
+        }
+
+        // Deactivates a decoration, removing its XP multiplier bonus
+        // When deactivated, the decoration's xp_multiplier no longer contributes to the total multiplier calculation
+        fn deactivate_decoration(ref self: ContractState, deco_id: u32) {
+            let mut world = self.world(@"aqua_stark");
+
+            // Validate deco_id is non-zero
+            assert(deco_id != 0, 'Invalid deco_id');
+
+            // Get caller address to validate ownership
+            let caller = get_caller_address();
+
+            // Read decoration from world
+            let mut decoration: Decoration = world.read_model(deco_id);
+
+            // Validate ownership - decoration must belong to caller
+            let decoration_owner_felt: felt252 = decoration.owner.into();
+            let caller_felt: felt252 = caller.into();
+            assert(decoration_owner_felt == caller_felt, 'Not owner');
+
+            // Set is_active = false
+            decoration.is_active = false;
 
             // Update Decoration component in Dojo world
             world.write_model(@decoration);
