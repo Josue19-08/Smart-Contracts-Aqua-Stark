@@ -16,6 +16,7 @@ trait IFishSystem<TContractState> {
     fn get_fish_family_tree(self: @TContractState, fish_id: u32) -> FamilyTree;
     fn feed_fish_batch(ref self: TContractState, fish_ids: core::array::Array<u32>, timestamp: u64);
     fn gain_fish_xp(ref self: TContractState, fish_id: u32, amount: u32);
+    fn set_ready_to_breed(ref self: TContractState, fish_id: u32, ready: bool);
 }
 
 // Fish system contract implementation
@@ -513,6 +514,40 @@ mod FishSystem {
                     // Adult is final stage, no further evolution
                 },
             }
+
+            // Write updated fish back to world
+            world.write_model(@fish);
+        }
+
+        // Marks a fish as ready or not ready to breed
+        // Validates that the fish is in Adult state before allowing the flag to be set
+        fn set_ready_to_breed(ref self: ContractState, fish_id: u32, ready: bool) {
+            let mut world = self.world(@"aqua_stark");
+
+            // Validate fish_id is non-zero
+            assert(fish_id != 0, 'Invalid fish_id');
+
+            // Get caller address to validate ownership
+            let caller = get_caller_address();
+
+            // Read fish from world
+            let mut fish: Fish = world.read_model(fish_id);
+
+            // Validate ownership - fish must belong to caller
+            let fish_owner_felt: felt252 = fish.owner.into();
+            let caller_felt: felt252 = caller.into();
+            assert(fish_owner_felt == caller_felt, 'Not owner');
+
+            // Validate fish is in Adult state
+            match fish.state {
+                FishState::Adult => {},
+                _ => {
+                    assert(false, 'Not Adult');
+                },
+            }
+
+            // Update is_ready_to_breed flag
+            fish.is_ready_to_breed = ready;
 
             // Write updated fish back to world
             world.write_model(@fish);
