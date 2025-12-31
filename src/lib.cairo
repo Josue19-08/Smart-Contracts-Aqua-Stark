@@ -27,5 +27,9 @@ pub mod constants {
     pub mod game_config;
 }
 
-// libs and utils will be added when implemented
+pub mod libs {
+    pub mod dna_utils;
+}
+
+// utils will be added when implemented
 
