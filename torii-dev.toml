@@ -1,9 +1,27 @@
-world_address = "0x06d10bbdbf0b1798c946ed3a07361e86c546eab1af1e2d70fe4d1b17dfd04a5c"  # World address from deployment
+# Torii Indexer Configuration for Local Development
+# Torii indexes Dojo world events and provides real-time state synchronization
+
+# World address from deployment
+world_address = "0x06d10bbdbf0b1798c946ed3a07361e86c546eab1af1e2d70fe4d1b17dfd04a5c"
+
+# RPC endpoint (Katana local testnet)
 rpc = "http://localhost:5050"
 
+# Database configuration (SQLite for local development)
+# Database will be created in .torii directory
+db_dir = ".torii"
+
+# Events configuration
 [events]
+# Enable raw event indexing
 raw = true
 
+# Indexing configuration
 [indexing]
+# Index pending transactions
 pending = true
+
+# GraphQL endpoint (default: http://0.0.0.0:8080)
+# Torii will start GraphQL server on this port
+# graphql_endpoint = "http://0.0.0.0:8080"
 

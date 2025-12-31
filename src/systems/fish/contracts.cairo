@@ -45,7 +45,7 @@ mod FishSystem {
         // Generates a globally unique fish ID by atomically incrementing the FishCounter
         // Returns the current count value and increments it atomically
         fn get_next_fish_id(ref self: ContractState) -> u32 {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
             
             // Read current FishCounter state
             let mut counter: FishCounter = world.read_model(FISH_COUNTER_KEY);
@@ -66,7 +66,7 @@ mod FishSystem {
         // Mints a new fish NFT to a player's address
         // Generates unique ID, creates Fish component with default values, and updates player's fish_count
         fn mint_fish(ref self: ContractState, address: ContractAddress, species: felt252, dna: felt252) -> u32 {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
             
             // Validate address is non-zero
             let address_felt: felt252 = address.into();
@@ -118,7 +118,7 @@ mod FishSystem {
         // Returns all fish owned by the address
         // Searches all fish and collects those matching the owner
         fn get_fish_by_owner(self: @ContractState, address: ContractAddress) -> core::array::Array<Fish> {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate address is non-zero
             let address_felt: felt252 = address.into();
@@ -150,7 +150,7 @@ mod FishSystem {
 
         // Returns a specific fish by ID
         fn get_fish(self: @ContractState, fish_id: u32) -> Fish {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate fish_id is non-zero
             assert(fish_id != 0, 'Invalid fish_id');
@@ -166,7 +166,7 @@ mod FishSystem {
         // Builds family tree structure with parents, siblings, children, grandparents, uncles/aunts, and cousins
         // Note: Due to Cairo's limitations, this is a simplified implementation that searches iteratively
         fn get_fish_family_tree(self: @ContractState, fish_id: u32) -> FamilyTree {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate fish_id is non-zero
             assert(fish_id != 0, 'Invalid fish_id');
@@ -403,7 +403,7 @@ mod FishSystem {
         // Feeds multiple fish at once, applying XP bonuses based on active decorations
         // For each fish: validates ownership, calculates XP multiplier, applies XP with bonus, updates last_fed_at
         fn feed_fish_batch(ref self: ContractState, fish_ids: core::array::Array<u32>, timestamp: u64) {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
 
             // Get caller address to validate ownership
             let caller = get_caller_address();
@@ -469,7 +469,7 @@ mod FishSystem {
         // Increases XP for a specific fish and handles evolution state changes
         // When XP reaches thresholds, fish evolves: Baby → Juvenile → YoungAdult → Adult
         fn gain_fish_xp(ref self: ContractState, fish_id: u32, amount: u32) {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
 
             // Validate fish_id is non-zero
             assert(fish_id != 0, 'Invalid fish_id');
@@ -523,7 +523,7 @@ mod FishSystem {
         // Marks a fish as ready or not ready to breed
         // Validates that the fish is in Adult state before allowing the flag to be set
         fn set_ready_to_breed(ref self: ContractState, fish_id: u32, ready: bool) {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
 
             // Validate fish_id is non-zero
             assert(fish_id != 0, 'Invalid fish_id');
@@ -557,7 +557,7 @@ mod FishSystem {
         // Breeds two fish to create a new offspring
         // Validates prerequisites, generates new fish with mixed DNA from parents, sets parent lineage, and updates player statistics
         fn breed_fish(ref self: ContractState, fish_id1: u32, fish_id2: u32) -> u32 {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
 
             // Validate fish IDs are non-zero
             assert(fish_id1 != 0, 'Invalid fish_id1');

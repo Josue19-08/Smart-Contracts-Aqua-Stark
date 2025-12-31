@@ -44,7 +44,7 @@ mod DecorationSystem {
         // Generates a globally unique decoration ID by atomically incrementing the DecorationCounter
         // Returns the current count value and increments it atomically
         fn get_next_decoration_id(ref self: ContractState) -> u32 {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
             
             // Read current DecorationCounter state
             let mut counter: DecorationCounter = world.read_model(DECORATION_COUNTER_KEY);
@@ -65,7 +65,7 @@ mod DecorationSystem {
         // Mints a new decoration NFT to a player's address
         // Generates unique ID, sets XP multiplier based on kind, and initializes it as inactive
         fn mint_decoration(ref self: ContractState, address: ContractAddress, kind: DecorationKind) -> u32 {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
             
             // Validate address is non-zero
             let address_felt: felt252 = address.into();
@@ -107,7 +107,7 @@ mod DecorationSystem {
         // Returns all decorations owned by the address
         // Searches all decorations and collects those matching the owner
         fn get_decorations_by_owner(self: @ContractState, address: ContractAddress) -> core::array::Array<Decoration> {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate address is non-zero
             let address_felt: felt252 = address.into();
@@ -139,7 +139,7 @@ mod DecorationSystem {
 
         // Returns a specific decoration by ID
         fn get_decoration(self: @ContractState, deco_id: u32) -> Decoration {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate deco_id is non-zero
             assert(deco_id != 0, 'Invalid deco_id');
@@ -154,7 +154,7 @@ mod DecorationSystem {
         // Activates a decoration, making it apply its XP multiplier bonus
         // When activated, the decoration's xp_multiplier contributes to the total multiplier calculation
         fn activate_decoration(ref self: ContractState, deco_id: u32) {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
 
             // Validate deco_id is non-zero
             assert(deco_id != 0, 'Invalid deco_id');
@@ -180,7 +180,7 @@ mod DecorationSystem {
         // Deactivates a decoration, removing its XP multiplier bonus
         // When deactivated, the decoration's xp_multiplier no longer contributes to the total multiplier calculation
         fn deactivate_decoration(ref self: ContractState, deco_id: u32) {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
 
             // Validate deco_id is non-zero
             assert(deco_id != 0, 'Invalid deco_id');
@@ -206,7 +206,7 @@ mod DecorationSystem {
         // Calculates the total XP multiplier from all active decorations owned by the tank's owner
         // Sums the xp_multiplier values of all active decorations and returns the total bonus percentage
         fn get_xp_multiplier(self: @ContractState, tank_id: u32) -> u8 {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate tank_id is non-zero
             assert(tank_id != 0, 'Invalid tank_id');
