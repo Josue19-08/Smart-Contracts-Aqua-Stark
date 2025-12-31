@@ -19,6 +19,7 @@ trait IDecorationSystem<TContractState> {
     fn get_decoration(self: @TContractState, deco_id: u32) -> Decoration;
     fn activate_decoration(ref self: TContractState, deco_id: u32);
     fn deactivate_decoration(ref self: TContractState, deco_id: u32);
+    fn get_xp_multiplier(self: @TContractState, tank_id: u32) -> u8;
 }
 
 // Decoration system contract implementation
@@ -31,6 +32,7 @@ mod DecorationSystem {
     use aqua_stark::models::counters::decoration_counter::DecorationCounter;
     use aqua_stark::models::decoration::{Decoration, DecorationKind};
     use aqua_stark::models::player::Player;
+    use aqua_stark::models::tank::Tank;
 
     // Component state
     #[storage]
@@ -199,6 +201,46 @@ mod DecorationSystem {
 
             // Update Decoration component in Dojo world
             world.write_model(@decoration);
+        }
+
+        // Calculates the total XP multiplier from all active decorations owned by the tank's owner
+        // Sums the xp_multiplier values of all active decorations and returns the total bonus percentage
+        fn get_xp_multiplier(self: @ContractState, tank_id: u32) -> u8 {
+            let world = self.world(@"aqua_stark");
+
+            // Validate tank_id is non-zero
+            assert(tank_id != 0, 'Invalid tank_id');
+
+            // Read tank from world by ID
+            let tank: Tank = world.read_model(tank_id);
+
+            // Get the tank owner's address
+            let owner_address = tank.owner;
+
+            // Initialize total multiplier
+            let mut total_multiplier: u8 = 0;
+
+            // Get current decoration count to know search range
+            let counter: DecorationCounter = world.read_model(DECORATION_COUNTER_KEY);
+            let max_id = counter.count;
+
+            // Search all decorations and sum multipliers from active ones owned by tank owner
+            let mut current_id = 1;
+            while current_id <= max_id {
+                let decoration: Decoration = world.read_model(current_id);
+                let decoration_owner_felt: felt252 = decoration.owner.into();
+                let owner_felt: felt252 = owner_address.into();
+
+                // Check if decoration belongs to owner and is active
+                if decoration_owner_felt == owner_felt && decoration.is_active {
+                    total_multiplier = total_multiplier + decoration.xp_multiplier;
+                }
+
+                current_id = current_id + 1;
+            }
+
+            // Return the total multiplier (u8, e.g., 25 = +25%)
+            total_multiplier
         }
     }
 }
