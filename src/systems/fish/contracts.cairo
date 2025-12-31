@@ -25,7 +25,7 @@ trait IFishSystem<TContractState> {
 mod FishSystem {
     use super::{IFishSystem, FISH_COUNTER_KEY};
     use dojo::model::ModelStorage;
-    use starknet::{ContractAddress, get_block_timestamp, get_caller_address};
+    use starknet::{ContractAddress, get_block_timestamp, get_tx_info};
     use core::option::Option;
     use core::array::ArrayTrait;
     use aqua_stark::models::counters::fish_counter::FishCounter;
@@ -43,24 +43,24 @@ mod FishSystem {
     #[abi(embed_v0)]
     impl FishSystemImpl of super::IFishSystem<ContractState> {
         // Generates a globally unique fish ID by atomically incrementing the FishCounter
-        // Returns the current count value and increments it atomically
+        // Returns the incremented count value (IDs start from 1, not 0)
         fn get_next_fish_id(ref self: ContractState) -> u32 {
             let mut world = self.world(@"aqua_stark_0_0_1");
-            
+
             // Read current FishCounter state
             let mut counter: FishCounter = world.read_model(FISH_COUNTER_KEY);
-            
-            // Get current count value (to return)
-            let current_id = counter.count;
-            
-            // Atomically increment the counter
+
+            // Increment the counter first (IDs start from 1)
             counter.count = counter.count + 1;
-            
+
+            // Get the new count value (to return as ID)
+            let new_id = counter.count;
+
             // Write updated counter back to world
             world.write_model(@counter);
-            
-            // Return the ID that was assigned (before increment)
-            current_id
+
+            // Return the new ID (starts from 1)
+            new_id
         }
 
         // Mints a new fish NFT to a player's address
@@ -405,8 +405,9 @@ mod FishSystem {
         fn feed_fish_batch(ref self: ContractState, fish_ids: core::array::Array<u32>, timestamp: u64) {
             let mut world = self.world(@"aqua_stark_0_0_1");
 
-            // Get caller address to validate ownership
-            let caller = get_caller_address();
+            // Get account address from transaction info to validate ownership
+            let tx_info = get_tx_info().unbox();
+            let caller = tx_info.account_contract_address;
 
             // Get fish array length
             let fish_count = fish_ids.len();
@@ -477,8 +478,9 @@ mod FishSystem {
             // Validate amount is greater than zero
             assert(amount > 0, 'Invalid amount');
 
-            // Get caller address to validate ownership
-            let caller = get_caller_address();
+            // Get account address from transaction info to validate ownership
+            let tx_info = get_tx_info().unbox();
+            let caller = tx_info.account_contract_address;
 
             // Read fish from world
             let mut fish: Fish = world.read_model(fish_id);
@@ -491,30 +493,16 @@ mod FishSystem {
             // Add amount to fish XP
             fish.xp = fish.xp + amount;
 
-            // Check XP thresholds for evolution based on current state
-            match fish.state {
-                FishState::Baby => {
-                    // Check if XP reaches threshold for Juvenile
-                    if fish.xp >= XP_THRESHOLD_JUVENILE {
-                        fish.state = FishState::Juvenile;
-                    }
-                },
-                FishState::Juvenile => {
-                    // Check if XP reaches threshold for YoungAdult
-                    if fish.xp >= XP_THRESHOLD_YOUNG_ADULT {
-                        fish.state = FishState::YoungAdult;
-                    }
-                },
-                FishState::YoungAdult => {
-                    // Check if XP reaches threshold for Adult
-                    if fish.xp >= XP_THRESHOLD_ADULT {
-                        fish.state = FishState::Adult;
-                    }
-                },
-                FishState::Adult => {
-                    // Adult is final stage, no further evolution
-                },
+            // Check XP thresholds for evolution - evolve through all stages if XP is high enough
+            // This ensures a fish with enough XP evolves to the correct final state
+            if fish.xp >= XP_THRESHOLD_ADULT {
+                fish.state = FishState::Adult;
+            } else if fish.xp >= XP_THRESHOLD_YOUNG_ADULT {
+                fish.state = FishState::YoungAdult;
+            } else if fish.xp >= XP_THRESHOLD_JUVENILE {
+                fish.state = FishState::Juvenile;
             }
+            // If XP is below XP_THRESHOLD_JUVENILE, fish stays as Baby
 
             // Write updated fish back to world
             world.write_model(@fish);
@@ -528,8 +516,9 @@ mod FishSystem {
             // Validate fish_id is non-zero
             assert(fish_id != 0, 'Invalid fish_id');
 
-            // Get caller address to validate ownership
-            let caller = get_caller_address();
+            // Get account address from transaction info to validate ownership
+            let tx_info = get_tx_info().unbox();
+            let caller = tx_info.account_contract_address;
 
             // Read fish from world
             let mut fish: Fish = world.read_model(fish_id);
@@ -566,8 +555,9 @@ mod FishSystem {
             // Validate fish are different (cannot breed with itself)
             assert(fish_id1 != fish_id2, 'Same fish');
 
-            // Get caller address to validate ownership
-            let caller = get_caller_address();
+            // Get account address from transaction info to validate ownership
+            let tx_info = get_tx_info().unbox();
+            let caller = tx_info.account_contract_address;
 
             // Read both parent fish from world
             let mut parent1: Fish = world.read_model(fish_id1);

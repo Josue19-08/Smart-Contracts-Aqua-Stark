@@ -33,24 +33,24 @@ mod TankSystem {
     #[abi(embed_v0)]
     impl TankSystemImpl of super::ITankSystem<ContractState> {
         // Generates a globally unique tank ID by atomically incrementing the TankCounter
-        // Returns the current count value and increments it atomically
+        // Returns the incremented count value (IDs start from 1, not 0)
         fn get_next_tank_id(ref self: ContractState) -> u32 {
             let mut world = self.world(@"aqua_stark_0_0_1");
-            
+
             // Read current TankCounter state
             let mut counter: TankCounter = world.read_model(TANK_COUNTER_KEY);
-            
-            // Get current count value (to return)
-            let current_id = counter.count;
-            
-            // Atomically increment the counter
+
+            // Increment the counter first (IDs start from 1)
             counter.count = counter.count + 1;
-            
+
+            // Get the new count value (to return as ID)
+            let new_id = counter.count;
+
             // Write updated counter back to world
             world.write_model(@counter);
-            
-            // Return the ID that was assigned (before increment)
-            current_id
+
+            // Return the new ID (starts from 1)
+            new_id
         }
 
         // Mints a new tank NFT to a player's address
