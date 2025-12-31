@@ -5,6 +5,7 @@
 mod tests {
     use starknet::ContractAddress;
     use core::option::Option;
+    use core::traits::TryInto;
     use aqua_stark::models::player::Player;
     use aqua_stark::models::fish::{Fish, FishState};
     use aqua_stark::models::tank::Tank;
@@ -16,8 +17,10 @@ mod tests {
     const TEST_SPECIES: felt252 = 67890;
     
     // Helper function to create test address
+    // Using TryInto to avoid deprecated contract_address_const
     fn get_test_address() -> ContractAddress {
-        starknet::contract_address_const::<0x123>()
+        let address_felt: felt252 = 0x123;
+        address_felt.try_into().unwrap()
     }
 
     // ============================================================================
