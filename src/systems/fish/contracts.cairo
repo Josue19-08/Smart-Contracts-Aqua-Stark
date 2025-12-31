@@ -1,4 +1,5 @@
 use starknet::ContractAddress;
+use aqua_stark::models::fish::Fish;
 
 // Constant key for singleton FishCounter instance
 const FISH_COUNTER_KEY: u32 = 0;
@@ -8,6 +9,8 @@ const FISH_COUNTER_KEY: u32 = 0;
 trait IFishSystem<TContractState> {
     fn get_next_fish_id(ref self: TContractState) -> u32;
     fn mint_fish(ref self: TContractState, address: ContractAddress, species: felt252, dna: felt252) -> u32;
+    fn get_fish_by_owner(self: @TContractState, address: ContractAddress) -> core::array::Array<Fish>;
+    fn get_fish(self: @TContractState, fish_id: u32) -> Fish;
 }
 
 // Fish system contract implementation
@@ -17,6 +20,7 @@ mod FishSystem {
     use dojo::model::ModelStorage;
     use starknet::{ContractAddress, get_block_timestamp};
     use core::option::Option;
+    use core::array::ArrayTrait;
     use aqua_stark::models::counters::fish_counter::FishCounter;
     use aqua_stark::models::fish::{Fish, FishState};
     use aqua_stark::models::player::Player;
@@ -99,6 +103,53 @@ mod FishSystem {
             
             // Return the new fish_id
             fish_id
+        }
+
+        // Returns all fish owned by the address
+        // Searches all fish and collects those matching the owner
+        fn get_fish_by_owner(self: @ContractState, address: ContractAddress) -> core::array::Array<Fish> {
+            let world = self.world(@"aqua_stark");
+
+            // Validate address is non-zero
+            let address_felt: felt252 = address.into();
+            assert(address_felt != 0, 'Invalid address');
+
+            // Initialize result array
+            let mut result: core::array::Array<Fish> = ArrayTrait::new();
+
+            // Get current fish count to know search range
+            let counter: FishCounter = world.read_model(FISH_COUNTER_KEY);
+            let max_id = counter.count;
+
+            // Search all fish and collect those owned by this address
+            let mut current_id = 1;
+            while current_id <= max_id {
+                let fish: Fish = world.read_model(current_id);
+                
+                // Check if this fish belongs to the address
+                let fish_owner_felt: felt252 = fish.owner.into();
+                if fish_owner_felt == address_felt {
+                    ArrayTrait::append(ref result, fish);
+                }
+
+                current_id = current_id + 1;
+            }
+
+            result
+        }
+
+        // Returns a specific fish by ID
+        fn get_fish(self: @ContractState, fish_id: u32) -> Fish {
+            let world = self.world(@"aqua_stark");
+
+            // Validate fish_id is non-zero
+            assert(fish_id != 0, 'Invalid fish_id');
+
+            // Read fish from world by ID
+            let fish: Fish = world.read_model(fish_id);
+
+            // Return the fish (if it doesn't exist, returns default values)
+            fish
         }
     }
 }
