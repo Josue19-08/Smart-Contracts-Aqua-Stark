@@ -15,6 +15,7 @@ trait IFishSystem<TContractState> {
     fn get_fish(self: @TContractState, fish_id: u32) -> Fish;
     fn get_fish_family_tree(self: @TContractState, fish_id: u32) -> FamilyTree;
     fn feed_fish_batch(ref self: TContractState, fish_ids: core::array::Array<u32>, timestamp: u64);
+    fn gain_fish_xp(ref self: TContractState, fish_id: u32, amount: u32);
 }
 
 // Fish system contract implementation
@@ -30,7 +31,7 @@ mod FishSystem {
     use aqua_stark::models::fish::{Fish, FishState, FamilyTree};
     use aqua_stark::models::player::Player;
     use aqua_stark::models::decoration::Decoration;
-    use aqua_stark::constants::game_config::BASE_FEED_XP;
+    use aqua_stark::constants::game_config::{BASE_FEED_XP, XP_THRESHOLD_JUVENILE, XP_THRESHOLD_YOUNG_ADULT, XP_THRESHOLD_ADULT};
 
     // Component state
     #[storage]
@@ -461,6 +462,60 @@ mod FishSystem {
 
                 i = i + 1;
             }
+        }
+
+        // Increases XP for a specific fish and handles evolution state changes
+        // When XP reaches thresholds, fish evolves: Baby → Juvenile → YoungAdult → Adult
+        fn gain_fish_xp(ref self: ContractState, fish_id: u32, amount: u32) {
+            let mut world = self.world(@"aqua_stark");
+
+            // Validate fish_id is non-zero
+            assert(fish_id != 0, 'Invalid fish_id');
+
+            // Validate amount is greater than zero
+            assert(amount > 0, 'Invalid amount');
+
+            // Get caller address to validate ownership
+            let caller = get_caller_address();
+
+            // Read fish from world
+            let mut fish: Fish = world.read_model(fish_id);
+
+            // Validate ownership - fish must belong to caller
+            let fish_owner_felt: felt252 = fish.owner.into();
+            let caller_felt: felt252 = caller.into();
+            assert(fish_owner_felt == caller_felt, 'Not owner');
+
+            // Add amount to fish XP
+            fish.xp = fish.xp + amount;
+
+            // Check XP thresholds for evolution based on current state
+            match fish.state {
+                FishState::Baby => {
+                    // Check if XP reaches threshold for Juvenile
+                    if fish.xp >= XP_THRESHOLD_JUVENILE {
+                        fish.state = FishState::Juvenile;
+                    }
+                },
+                FishState::Juvenile => {
+                    // Check if XP reaches threshold for YoungAdult
+                    if fish.xp >= XP_THRESHOLD_YOUNG_ADULT {
+                        fish.state = FishState::YoungAdult;
+                    }
+                },
+                FishState::YoungAdult => {
+                    // Check if XP reaches threshold for Adult
+                    if fish.xp >= XP_THRESHOLD_ADULT {
+                        fish.state = FishState::Adult;
+                    }
+                },
+                FishState::Adult => {
+                    // Adult is final stage, no further evolution
+                },
+            }
+
+            // Write updated fish back to world
+            world.write_model(@fish);
         }
     }
 }
