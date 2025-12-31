@@ -7,6 +7,7 @@ trait IPlayerSystem<TContractState> {
     fn register_player(ref self: TContractState, address: ContractAddress);
     fn get_player(self: @TContractState, address: ContractAddress) -> Player;
     fn get_player_stats(self: @TContractState, address: ContractAddress) -> Player;
+    fn gain_player_xp(ref self: TContractState, address: ContractAddress, amount: u32);
 }
 
 // Player system contract implementation
@@ -89,6 +90,28 @@ mod PlayerSystem {
 
             // Return the player (contains all stats: total_xp, fish_count, tournaments_won, reputation, offspring_created)
             player
+        }
+
+        // Increases the player's total XP
+        // Updates the Player component's total_xp field with the amount provided
+        fn gain_player_xp(ref self: ContractState, address: ContractAddress, amount: u32) {
+            let mut world = self.world(@"aqua_stark");
+
+            // Validate address is non-zero
+            let address_felt: felt252 = address.into();
+            assert(address_felt != 0, 'Invalid address');
+
+            // Validate amount is greater than zero
+            assert(amount > 0, 'Invalid amount');
+
+            // Read player from world by address
+            let mut player: Player = world.read_model(address);
+
+            // Add amount to player's total_xp
+            player.total_xp = player.total_xp + amount;
+
+            // Write updated player back to world
+            world.write_model(@player);
         }
     }
 }
