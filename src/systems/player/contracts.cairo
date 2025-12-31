@@ -1,9 +1,12 @@
 use starknet::ContractAddress;
+use aqua_stark::models::player::Player;
 
 // Interface for player system functions
 #[starknet::interface]
 trait IPlayerSystem<TContractState> {
     fn register_player(ref self: TContractState, address: ContractAddress);
+    fn get_player(self: @TContractState, address: ContractAddress) -> Player;
+    fn get_player_stats(self: @TContractState, address: ContractAddress) -> Player;
 }
 
 // Player system contract implementation
@@ -55,6 +58,37 @@ mod PlayerSystem {
             
             // Write Player to world state
             world.write_model(@new_player);
+        }
+
+        // Returns a player's data by address
+        fn get_player(self: @ContractState, address: ContractAddress) -> Player {
+            let world = self.world(@"aqua_stark");
+
+            // Validate address is non-zero
+            let address_felt: felt252 = address.into();
+            assert(address_felt != 0, 'Invalid address');
+
+            // Read player from world by address (address is the key)
+            let player: Player = world.read_model(address);
+
+            // Return the player (if it doesn't exist, returns default values)
+            player
+        }
+
+        // Returns a summary of player statistics
+        // Since Player already contains all statistics, we return the Player component directly
+        fn get_player_stats(self: @ContractState, address: ContractAddress) -> Player {
+            let world = self.world(@"aqua_stark");
+
+            // Validate address is non-zero
+            let address_felt: felt252 = address.into();
+            assert(address_felt != 0, 'Invalid address');
+
+            // Read player from world by address
+            let player: Player = world.read_model(address);
+
+            // Return the player (contains all stats: total_xp, fish_count, tournaments_won, reputation, offspring_created)
+            player
         }
     }
 }
