@@ -35,7 +35,7 @@ mod TankSystem {
         // Generates a globally unique tank ID by atomically incrementing the TankCounter
         // Returns the current count value and increments it atomically
         fn get_next_tank_id(ref self: ContractState) -> u32 {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
             
             // Read current TankCounter state
             let mut counter: TankCounter = world.read_model(TANK_COUNTER_KEY);
@@ -56,7 +56,7 @@ mod TankSystem {
         // Mints a new tank NFT to a player's address
         // Generates unique ID, creates Tank component with specified capacity, and links it to the player owner
         fn mint_tank(ref self: ContractState, address: ContractAddress, capacity: u8) -> u32 {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
             
             // Validate address is non-zero
             let address_felt: felt252 = address.into();
@@ -91,7 +91,7 @@ mod TankSystem {
         // Returns the first tank owned by the address
         // Searches tanks sequentially starting from ID 1 until finding one owned by the address
         fn get_tank_by_owner(self: @ContractState, address: ContractAddress) -> Tank {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate address is non-zero
             let address_felt: felt252 = address.into();
@@ -125,7 +125,7 @@ mod TankSystem {
         // Returns all tanks owned by the address
         // Searches all tanks and collects those matching the owner
         fn get_tanks_by_owner(self: @ContractState, address: ContractAddress) -> core::array::Array<Tank> {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate address is non-zero
             let address_felt: felt252 = address.into();
@@ -157,7 +157,7 @@ mod TankSystem {
 
         // Returns a specific tank by ID
         fn get_tank(self: @ContractState, tank_id: u32) -> Tank {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate tank_id is non-zero
             assert(tank_id != 0, 'Invalid tank_id');

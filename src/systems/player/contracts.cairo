@@ -27,7 +27,7 @@ mod PlayerSystem {
         // Registers a new player on-chain with default values
         // Validates address is non-zero and player doesn't already exist
         fn register_player(ref self: ContractState, address: ContractAddress) {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
             
             // Validate address is non-zero (address key cannot be zero)
             let address_felt: felt252 = address.into();
@@ -63,7 +63,7 @@ mod PlayerSystem {
 
         // Returns a player's data by address
         fn get_player(self: @ContractState, address: ContractAddress) -> Player {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate address is non-zero
             let address_felt: felt252 = address.into();
@@ -79,7 +79,7 @@ mod PlayerSystem {
         // Returns a summary of player statistics
         // Since Player already contains all statistics, we return the Player component directly
         fn get_player_stats(self: @ContractState, address: ContractAddress) -> Player {
-            let world = self.world(@"aqua_stark");
+            let world = self.world(@"aqua_stark_0_0_1");
 
             // Validate address is non-zero
             let address_felt: felt252 = address.into();
@@ -95,7 +95,7 @@ mod PlayerSystem {
         // Increases the player's total XP
         // Updates the Player component's total_xp field with the amount provided
         fn gain_player_xp(ref self: ContractState, address: ContractAddress, amount: u32) {
-            let mut world = self.world(@"aqua_stark");
+            let mut world = self.world(@"aqua_stark_0_0_1");
 
             // Validate address is non-zero
             let address_felt: felt252 = address.into();
