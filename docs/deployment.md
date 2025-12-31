@@ -81,3 +81,4 @@ sozo execute PlayerSystem register_player --world 0x06d10bbdbf0b1798c946ed3a0736
 ```
 
 For detailed Katana setup, see [katana_setup.md](katana_setup.md).
+For complete deployment guide, see [local_deployment.md](local_deployment.md).

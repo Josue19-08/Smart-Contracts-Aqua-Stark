@@ -85,4 +85,3 @@ echo "Next steps:"
 echo "   1. Test contract interactions using sozo execute"
 echo "   2. Configure Torii indexer (see docs/deployment.md)"
 echo "   3. Run end-to-end tests"
-
