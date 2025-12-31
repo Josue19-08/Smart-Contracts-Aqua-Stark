@@ -27,3 +27,14 @@ pub struct Fish {
     pub species: felt252,
 }
 
+// FamilyTree struct representing the complete family tree of a fish
+#[derive(Drop, Serde)]
+pub struct FamilyTree {
+    pub parents: core::array::Array<Fish>,
+    pub siblings: core::array::Array<Fish>,
+    pub children: core::array::Array<Fish>,
+    pub grandparents: core::array::Array<Fish>,
+    pub uncles_aunts: core::array::Array<Fish>,
+    pub cousins: core::array::Array<Fish>,
+}
+
