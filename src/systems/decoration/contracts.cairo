@@ -27,7 +27,7 @@ trait IDecorationSystem<TContractState> {
 mod DecorationSystem {
     use super::{IDecorationSystem, DECORATION_COUNTER_KEY, PLANT_MULTIPLIER, STATUE_MULTIPLIER, BACKGROUND_MULTIPLIER, ORNAMENT_MULTIPLIER};
     use dojo::model::ModelStorage;
-    use starknet::{ContractAddress, get_caller_address};
+    use starknet::{ContractAddress, get_tx_info};
     use core::array::ArrayTrait;
     use aqua_stark::models::counters::decoration_counter::DecorationCounter;
     use aqua_stark::models::decoration::{Decoration, DecorationKind};
@@ -42,24 +42,24 @@ mod DecorationSystem {
     #[abi(embed_v0)]
     impl DecorationSystemImpl of super::IDecorationSystem<ContractState> {
         // Generates a globally unique decoration ID by atomically incrementing the DecorationCounter
-        // Returns the current count value and increments it atomically
+        // Returns the incremented count value (IDs start from 1, not 0)
         fn get_next_decoration_id(ref self: ContractState) -> u32 {
             let mut world = self.world(@"aqua_stark_0_0_1");
-            
+
             // Read current DecorationCounter state
             let mut counter: DecorationCounter = world.read_model(DECORATION_COUNTER_KEY);
-            
-            // Get current count value (to return)
-            let current_id = counter.count;
-            
-            // Atomically increment the counter
+
+            // Increment the counter first (IDs start from 1)
             counter.count = counter.count + 1;
-            
+
+            // Get the new count value (to return as ID)
+            let new_id = counter.count;
+
             // Write updated counter back to world
             world.write_model(@counter);
-            
-            // Return the ID that was assigned (before increment)
-            current_id
+
+            // Return the new ID (starts from 1)
+            new_id
         }
 
         // Mints a new decoration NFT to a player's address
@@ -159,8 +159,9 @@ mod DecorationSystem {
             // Validate deco_id is non-zero
             assert(deco_id != 0, 'Invalid deco_id');
 
-            // Get caller address to validate ownership
-            let caller = get_caller_address();
+            // Get account address from transaction info to validate ownership
+            let tx_info = get_tx_info().unbox();
+            let caller = tx_info.account_contract_address;
 
             // Read decoration from world
             let mut decoration: Decoration = world.read_model(deco_id);
@@ -185,8 +186,9 @@ mod DecorationSystem {
             // Validate deco_id is non-zero
             assert(deco_id != 0, 'Invalid deco_id');
 
-            // Get caller address to validate ownership
-            let caller = get_caller_address();
+            // Get account address from transaction info to validate ownership
+            let tx_info = get_tx_info().unbox();
+            let caller = tx_info.account_contract_address;
 
             // Read decoration from world
             let mut decoration: Decoration = world.read_model(deco_id);
