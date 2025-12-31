@@ -1,2 +1,2 @@
-// Placeholder module to prevent compilation errors
+pub mod game_config;
 
