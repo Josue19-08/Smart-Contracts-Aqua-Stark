@@ -12,6 +12,10 @@ manifest*.json
 .env.local
 .env.*.local
 
+# Deployment configs with private keys
+dojo_sepolia.toml
+dojo_mainnet.toml
+
 # IDE
 .vscode/
 .idea/
